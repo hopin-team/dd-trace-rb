@@ -35,6 +35,18 @@ RSpec.describe Datadog::Contrib::ConcurrentRuby::Integration do
 
       it { is_expected.to be false }
     end
+
+    context 'when Concurrent::Promises::Future is defined' do
+      before { stub_const('Concurrent::Promises::Future', Class.new) }
+
+      it { is_expected.to be true }
+    end
+
+    context 'when Concurrent::Promises::Future is not defined' do
+      before { hide_const('Concurrent::Promises::Future') }
+
+      it { is_expected.to be false }
+    end
   end
 
   describe '.compatible?' do
