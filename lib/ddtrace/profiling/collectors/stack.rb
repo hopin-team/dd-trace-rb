@@ -163,6 +163,17 @@ module Datadog
         end
 
         def get_trace_identifiers(thread)
+          if defined?(::Hopin::Observability)
+            if (span = ::Hopin::Observability.current_span)
+              context = span.context
+              span_id = context.span_id
+              trace_id = context.trace_id
+
+              if span_id != ::OpenTelemetry::Trace::INVALID_SPAN_ID
+                [span.trace_id, span.span_id]
+              end
+            end
+          end
           return unless thread.is_a?(::Thread)
           return unless Datadog.respond_to?(:tracer) && Datadog.tracer.respond_to?(:active_correlation)
 
