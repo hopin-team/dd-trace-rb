@@ -162,7 +162,22 @@ module Datadog
           interval
         end
 
+        def id_to_int(id)
+          id.unpack('H*').first[-16..-1].to_i(16)
+        end
+
         def get_trace_identifiers(thread)
+          if defined?(::Hopin::Observability)
+            if (span = ::Hopin::Observability.current_span(thread))
+              context = span.context
+              span_id = context.span_id
+              trace_id = context.trace_id
+
+              if span_id != ::OpenTelemetry::Trace::INVALID_SPAN_ID
+                return [id_to_int(trace_id), id_to_int(span_id)]
+              end
+            end
+          end
           return unless thread.is_a?(::Thread)
           return unless Datadog.respond_to?(:tracer) && Datadog.tracer.respond_to?(:active_correlation)
 
